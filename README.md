@@ -71,6 +71,156 @@ docker-compose logs -f php
 
 Настройте виртуальный хост с DocumentRoot на директорию `public/`.
 
+## Развёртывание на продакшен-сервере (CentOS 9)
+
+### 1. Подготовка сервера
+
+```bash
+# Обновление системы
+sudo dnf update -y
+
+# Установка Docker и Docker Compose
+sudo dnf install -y dnf-utils
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Запуск и автозапуск Docker
+sudo systemctl enable --now docker
+
+# Добавление текущего пользователя в группу docker (опционально)
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+### 2. Развёртывание приложения
+
+```bash
+# Клонирование репозитория
+cd /var/www
+sudo git clone <repository_url> rest_api
+cd rest_api
+
+# Создание директории для данных с правильными правами
+sudo mkdir -p data
+sudo chown -R 1000:1000 data
+
+# Сборка и запуск контейнеров
+sudo docker compose up -d --build
+
+# Проверка статуса
+sudo docker compose ps
+```
+
+Приложение будет доступно на порту `8080`.
+
+### 3. Настройка firewall
+
+```bash
+# Открытие порта 8080
+sudo firewall-cmd --permanent --add-port=8080/tcp
+sudo firewall-cmd --reload
+```
+
+### 4. Настройка SELinux
+
+Если SELinux включён в режиме `enforcing`, необходимо добавить контексты:
+
+```bash
+# Проверка статуса SELinux
+sestatus
+
+# Разрешить Nginx подключаться к сети
+sudo setsebool -P httpd_can_network_connect 1
+
+# Добавить контекст для директории проекта
+sudo semanage fcontext -a -t container_file_t "/var/www/rest_api(/.*)?"
+sudo restorecon -Rv /var/www/rest_api
+```
+
+Если `semanage` отсутствует:
+```bash
+sudo dnf install -y policycoreutils-python-utils
+```
+
+### 5. Настройка Nginx как reverse proxy (опционально)
+
+Для продакшена рекомендуется разместить основной Nginx перед контейнером для обработки SSL/TLS:
+
+```bash
+sudo dnf install -y nginx
+
+# Создание конфигурации виртуального хоста
+sudo tee /etc/nginx/conf.d/rest_api.conf > /dev/null <<'EOF'
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+
+sudo nginx -t
+sudo systemctl enable --now nginx
+```
+
+### 6. SSL-сертификат Let's Encrypt
+
+```bash
+sudo dnf install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+### 7. Управление приложением
+
+```bash
+# Просмотр логов
+sudo docker compose logs -f
+
+# Перезапуск
+sudo docker compose restart
+
+# Остановка
+sudo docker compose down
+
+# Обновление (пересборка после pull)
+sudo git pull
+sudo docker compose up -d --build
+```
+
+### 8. Автоматический запуск при перезагрузке сервера
+
+Контейнеры уже настроены с `restart: unless-stopped` в [`docker-compose.yml`](docker-compose.yml), но для гарантии автозапуска после перезагрузки:
+
+```bash
+# Создание systemd-сервиса
+sudo tee /etc/systemd/system/rest-api.service > /dev/null <<'EOF'
+[Unit]
+Description=REST API Messages (Docker Compose)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/var/www/rest_api
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now rest-api.service
+```
+
 ## API Endpoints
 
 ### Health Check
