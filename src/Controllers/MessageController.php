@@ -9,9 +9,9 @@ use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-final class MessageController
+final readonly class MessageController
 {
-    public function __construct(private readonly MessageService $messageService)
+    public function __construct(private MessageService $messageService)
     {
     }
 

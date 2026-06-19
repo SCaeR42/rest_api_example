@@ -107,6 +107,7 @@ final class MessageService
         $message['author'] = trim((string) ($data['author'] ?? 'anonymous')) ?: 'anonymous';
         $message['updatedAt'] = gmdate(DATE_ATOM);
 
+        $this->updateInStorage($id, $message);
         $this->persist();
 
         return $message;
@@ -141,6 +142,7 @@ final class MessageService
 
         $message['updatedAt'] = gmdate(DATE_ATOM);
 
+        $this->updateInStorage($id, $message);
         $this->persist();
 
         return $message;
@@ -172,6 +174,16 @@ final class MessageService
         }
 
         return $maxId + 1;
+    }
+
+    private function updateInStorage(int $id, array $message): void
+    {
+        foreach ($this->messages as $index => $existing) {
+            if ($existing['id'] === $id) {
+                $this->messages[$index] = $message;
+                return;
+            }
+        }
     }
 
     private function persist(): void
