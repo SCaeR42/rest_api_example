@@ -6,6 +6,7 @@ REST API для работы с сообщениями на базе Slim Framew
 
 - PHP 8.2 или выше
 - Composer
+- Docker и Docker Compose (для запуска в контейнере)
 
 ## Установка
 
@@ -22,6 +23,49 @@ composer start
 ```
 
 Сервер будет доступен по адресу: http://localhost:8080
+
+### Docker
+
+Архитектура состоит из двух контейнеров, объединенных bridge-сетью `rest_api_network`:
+- **nginx** - веб-сервер, принимает HTTP-запросы на порту 8080
+- **php** - PHP-FPM, обрабатывает динамические запросы (*.php) через fastcgi_pass
+
+Контейнеры общаются между собой через внутреннюю Docker-сеть. Nginx проксирует запросы к PHP-FPM по адресу `php:9000`.
+
+Для запуска приложения выполните:
+
+```bash
+docker-compose up -d
+```
+
+Сервер будет доступен по адресу: http://localhost:8080
+
+Директории `src`, `data` и `public` проброшены через volumes, что позволяет изменять файлы "на лету" без пересборки контейнера.
+
+#### Остановка контейнеров
+
+```bash
+docker-compose down
+```
+
+#### Пересборка образов
+
+```bash
+docker-compose build
+```
+
+#### Просмотр логов
+
+```bash
+docker-compose logs -f
+```
+
+#### Просмотр логов конкретного контейнера
+
+```bash
+docker-compose logs -f nginx
+docker-compose logs -f php
+```
 
 ### Apache
 

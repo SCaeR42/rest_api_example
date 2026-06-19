@@ -1,0 +1,42 @@
+services:
+  # PHP-FPM контейнер
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rest_api_php
+    volumes:
+      # Проброс директорий для изменения файлов "на лету"
+      - ./src:/var/www/html/src
+      - ./data:/var/www/html/data
+      - ./public:/var/www/html/public
+      # Монтирование vendor и composer файлов для корректной работы автозагрузки
+      - ./vendor:/var/www/html/vendor
+      - ./composer.json:/var/www/html/composer.json
+      - ./composer.lock:/var/www/html/composer.lock
+    networks:
+      - rest_api_network
+    restart: unless-stopped
+
+  # Nginx контейнер
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: rest_api_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      # Проброс директорий для изменения файлов "на лету"
+      - ./src:/var/www/html/src
+      - ./data:/var/www/html/data
+      - ./public:/var/www/html/public
+    depends_on:
+      - php
+    networks:
+      - rest_api_network
+    restart: unless-stopped
+
+networks:
+  rest_api_network:
+    driver: bridge
