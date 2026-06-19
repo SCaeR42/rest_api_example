@@ -14,6 +14,8 @@ services:
       - ./vendor:/var/www/html/vendor
       - ./composer.json:/var/www/html/composer.json
       - ./composer.lock:/var/www/html/composer.lock
+      # Общий volume для Unix-сокета
+      - php-socket:/var/run/php
     networks:
       - rest_api_network
     restart: unless-stopped
@@ -31,11 +33,16 @@ services:
       - ./src:/var/www/html/src
       - ./data:/var/www/html/data
       - ./public:/var/www/html/public
+      # Общий volume для Unix-сокета
+      - php-socket:/var/run/php
     depends_on:
       - php
     networks:
       - rest_api_network
     restart: unless-stopped
+
+volumes:
+  php-socket:
 
 networks:
   rest_api_network:
