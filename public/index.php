@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controllers\HealthController;
 use App\Controllers\MessageController;
 use App\Middleware\CorsMiddleware;
 use App\Services\MessageService;
@@ -21,18 +22,9 @@ $app->addErrorMiddleware(true, true, true);
 
 $messageService = new MessageService(dirname(__DIR__) . '/data/messages.json');
 $messageController = new MessageController($messageService);
+$healthController = new HealthController();
 
-$app->get('/health', static function (Request $request, Response $response): Response {
-    $payload = [
-        'status' => 'ok',
-        'service' => 'rest-api',
-        'version' => '1.0',
-    ];
-
-    $response->getBody()->write(json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-
-    return $response->withHeader('Content-Type', 'application/json; charset=UTF-8');
-});
+$app->get('/health', $healthController);
 
 $app->group('/api/v1.0', function (RouteCollectorProxy $group) use ($messageController): void {
     $group->get('/messages', [$messageController, 'index']);

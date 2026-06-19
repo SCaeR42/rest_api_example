@@ -11,7 +11,10 @@ use OpenApi\Attributes as OA;
     version: '1.0.0',
     description: 'REST API для управления сообщениями'
 )]
-#[OA\Server(url: '/api/v1.0')]
+#[OA\Server(
+    url: 'http://127.0.0.1:8080/api/v1.0',
+    description: "Local development server"
+)]
 #[OA\Schema(
     schema: 'Message',
     type: 'object',

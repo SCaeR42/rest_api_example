@@ -247,6 +247,37 @@ final readonly class MessageController
         return $response->withStatus(204);
     }
 
+    #[OA\Options(
+        path: '/messages',
+        summary: 'Получить список доступных HTTP-методов для коллекции сообщений',
+        tags: ['Messages'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Список доступных методов',
+                headers: [
+                    new OA\Header(header: 'Allow', description: 'Список разрешённых HTTP-методов', schema: new OA\Schema(type: 'string')),
+                ]
+            ),
+        ]
+    )]
+    #[OA\Options(
+        path: '/messages/{id}',
+        summary: 'Получить список доступных HTTP-методов для конкретного сообщения',
+        tags: ['Messages'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Список доступных методов',
+                headers: [
+                    new OA\Header(header: 'Allow', description: 'Список разрешённых HTTP-методов', schema: new OA\Schema(type: 'string')),
+                ]
+            ),
+        ]
+    )]
     public function options(Request $request, Response $response, array $args = []): Response
     {
         $methods = isset($args['id'])
@@ -258,6 +289,38 @@ final readonly class MessageController
             ->withHeader('Allow', $methods);
     }
 
+    #[OA\Head(
+        path: '/messages',
+        summary: 'Получить метаданные коллекции сообщений (без тела ответа)',
+        tags: ['Messages'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Метаданные коллекции',
+                headers: [
+                    new OA\Header(header: 'X-Total-Count', description: 'Общее количество сообщений', schema: new OA\Schema(type: 'integer')),
+                ]
+            ),
+        ]
+    )]
+    #[OA\Head(
+        path: '/messages/{id}',
+        summary: 'Получить метаданные конкретного сообщения (без тела ответа)',
+        tags: ['Messages'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Метаданные сообщения',
+                headers: [
+                    new OA\Header(header: 'X-Resource-Id', description: 'ID сообщения', schema: new OA\Schema(type: 'integer')),
+                ]
+            ),
+            new OA\Response(response: 404, description: 'Сообщение не найдено'),
+        ]
+    )]
     public function head(Request $request, Response $response, array $args = []): Response
     {
         if (isset($args['id'])) {
