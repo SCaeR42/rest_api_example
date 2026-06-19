@@ -1,0 +1,497 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "REST API Messages",
+    "description": "REST API для работы с сообщениями. Версия 1.0",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@example.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Проверка статуса сервиса",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Сервис работает",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "service": {
+                      "type": "string",
+                      "example": "rest-api"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1.0/messages": {
+      "get": {
+        "summary": "Получить список всех сообщений",
+        "tags": ["Messages"],
+        "responses": {
+          "200": {
+            "description": "Список сообщений",
+            "headers": {
+              "X-Total-Count": {
+                "description": "Общее количество сообщений",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Message"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "summary": "Получить метаданные списка сообщений",
+        "tags": ["Messages"],
+        "responses": {
+          "200": {
+            "description": "Метаданные списка сообщений",
+            "headers": {
+              "X-Total-Count": {
+                "description": "Общее количество сообщений",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Создать новое сообщение",
+        "tags": ["Messages"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Сообщение создано",
+            "headers": {
+              "Location": {
+                "description": "URL созданного сообщения",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "summary": "Получить список доступных методов для коллекции",
+        "tags": ["Messages"],
+        "responses": {
+          "200": {
+            "description": "Список доступных методов",
+            "headers": {
+              "Allow": {
+                "description": "Список доступных HTTP методов",
+                "schema": {
+                  "type": "string",
+                  "example": "GET, HEAD, POST, OPTIONS"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1.0/messages/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID сообщения",
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Получить сообщение по ID",
+        "tags": ["Messages"],
+        "responses": {
+          "200": {
+            "description": "Сообщение найдено",
+            "headers": {
+              "X-Resource-Id": {
+                "description": "ID сообщения",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сообщение не найдено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "summary": "Получить метаданные сообщения",
+        "tags": ["Messages"],
+        "responses": {
+          "200": {
+            "description": "Метаданные сообщения",
+            "headers": {
+              "X-Resource-Id": {
+                "description": "ID сообщения",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сообщение не найдено"
+          }
+        }
+      },
+      "put": {
+        "summary": "Полностью заменить сообщение",
+        "tags": ["Messages"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Сообщение обновлено",
+            "headers": {
+              "X-Resource-Id": {
+                "description": "ID сообщения",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сообщение не найдено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Частично обновить сообщение",
+        "tags": ["Messages"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Сообщение обновлено",
+            "headers": {
+              "X-Resource-Id": {
+                "description": "ID сообщения",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сообщение не найдено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Удалить сообщение",
+        "tags": ["Messages"],
+        "responses": {
+          "204": {
+            "description": "Сообщение удалено"
+          },
+          "404": {
+            "description": "Сообщение не найдено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "summary": "Получить список доступных методов для сообщения",
+        "tags": ["Messages"],
+        "responses": {
+          "200": {
+            "description": "Список доступных методов",
+            "headers": {
+              "Allow": {
+                "description": "Список доступных HTTP методов",
+                "schema": {
+                  "type": "string",
+                  "example": "GET, HEAD, PUT, PATCH, DELETE, OPTIONS"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Уникальный идентификатор сообщения",
+            "example": 1
+          },
+          "content": {
+            "type": "string",
+            "description": "Содержимое сообщения",
+            "example": "Привет, мир!"
+          },
+          "author": {
+            "type": "string",
+            "description": "Автор сообщения",
+            "example": "anonymous"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Дата и время создания",
+            "example": "2026-06-19T12:00:00+00:00"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Дата и время последнего обновления",
+            "example": "2026-06-19T12:00:00+00:00"
+          }
+        },
+        "required": ["id", "content", "author", "createdAt", "updatedAt"]
+      },
+      "MessageInput": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Содержимое сообщения",
+            "example": "Привет, мир!"
+          },
+          "author": {
+            "type": "string",
+            "description": "Автор сообщения",
+            "default": "anonymous",
+            "example": "John Doe"
+          }
+        },
+        "required": ["content"]
+      },
+      "MessageUpdate": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Новое содержимое сообщения",
+            "example": "Обновленное сообщение"
+          },
+          "author": {
+            "type": "string",
+            "description": "Новый автор сообщения",
+            "example": "Jane Doe"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "Описание ошибки",
+                "example": "Поле content обязательно и не может быть пустым."
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP статус код",
+                "example": 422
+              }
+            },
+            "required": ["message", "status"]
+          }
+        }
+      }
+    }
+  }
+}

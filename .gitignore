@@ -1,0 +1,6 @@
+/vendor/
+/data/
+/.idea/
+*.log
+.DS_Store
+Thumbs.db
