@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Services\MessageService;
 use InvalidArgumentException;
+use OpenApi\Attributes as OA;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -15,6 +16,29 @@ final readonly class MessageController
     {
     }
 
+    #[OA\Get(
+        path: '/messages',
+        summary: 'Получить список всех сообщений',
+        tags: ['Messages'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Успешный запрос',
+                headers: [
+                    new OA\Header(header: 'X-Total-Count', description: 'Общее количество сообщений', schema: new OA\Schema(type: 'integer')),
+                ],
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/Message')),
+                        new OA\Property(property: 'meta', properties: [
+                            new OA\Property(property: 'count', type: 'integer'),
+                        ], type: 'object'),
+                    ],
+                    type: 'object'
+                )
+            ),
+        ]
+    )]
     public function index(Request $request, Response $response): Response
     {
         $messages = $this->messageService->all();
@@ -27,6 +51,27 @@ final readonly class MessageController
         ], 200, ['X-Total-Count' => (string) count($messages)]);
     }
 
+    #[OA\Get(
+        path: '/messages/{id}',
+        summary: 'Получить сообщение по ID',
+        tags: ['Messages'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Успешный запрос',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/Message'),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 404, description: 'Сообщение не найдено'),
+        ]
+    )]
     public function show(Request $request, Response $response, array $args): Response
     {
         $message = $this->messageService->find((int) $args['id']);
@@ -38,6 +83,38 @@ final readonly class MessageController
         return $this->json($response, ['data' => $message], 200, ['X-Resource-Id' => (string) $message['id']]);
     }
 
+    #[OA\Post(
+        path: '/messages',
+        summary: 'Создать новое сообщение',
+        tags: ['Messages'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['content'],
+                properties: [
+                    new OA\Property(property: 'content', type: 'string', description: 'Текст сообщения'),
+                    new OA\Property(property: 'author', type: 'string', description: 'Автор сообщения', default: 'anonymous'),
+                ],
+                type: 'object'
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Сообщение создано',
+                headers: [
+                    new OA\Header(header: 'Location', description: 'URL созданного ресурса', schema: new OA\Schema(type: 'string')),
+                ],
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/Message'),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 422, description: 'Ошибка валидации'),
+        ]
+    )]
     public function store(Request $request, Response $response): Response
     {
         try {
@@ -54,6 +131,39 @@ final readonly class MessageController
         );
     }
 
+    #[OA\Put(
+        path: '/messages/{id}',
+        summary: 'Полностью заменить сообщение',
+        tags: ['Messages'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['content'],
+                properties: [
+                    new OA\Property(property: 'content', type: 'string', description: 'Текст сообщения'),
+                    new OA\Property(property: 'author', type: 'string', description: 'Автор сообщения'),
+                ],
+                type: 'object'
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Сообщение обновлено',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/Message'),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 404, description: 'Сообщение не найдено'),
+            new OA\Response(response: 422, description: 'Ошибка валидации'),
+        ]
+    )]
     public function replace(Request $request, Response $response, array $args): Response
     {
         try {
@@ -69,6 +179,38 @@ final readonly class MessageController
         return $this->json($response, ['data' => $message], 200, ['X-Resource-Id' => (string) $message['id']]);
     }
 
+    #[OA\Patch(
+        path: '/messages/{id}',
+        summary: 'Частично обновить сообщение',
+        tags: ['Messages'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'content', type: 'string', description: 'Текст сообщения'),
+                    new OA\Property(property: 'author', type: 'string', description: 'Автор сообщения'),
+                ],
+                type: 'object'
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Сообщение обновлено',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/Message'),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 404, description: 'Сообщение не найдено'),
+            new OA\Response(response: 422, description: 'Ошибка валидации'),
+        ]
+    )]
     public function update(Request $request, Response $response, array $args): Response
     {
         try {
@@ -84,6 +226,18 @@ final readonly class MessageController
         return $this->json($response, ['data' => $message], 200, ['X-Resource-Id' => (string) $message['id']]);
     }
 
+    #[OA\Delete(
+        path: '/messages/{id}',
+        summary: 'Удалить сообщение',
+        tags: ['Messages'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Сообщение удалено'),
+            new OA\Response(response: 404, description: 'Сообщение не найдено'),
+        ]
+    )]
     public function destroy(Request $request, Response $response, array $args): Response
     {
         if (!$this->messageService->delete((int) $args['id'])) {
