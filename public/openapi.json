@@ -114,6 +114,17 @@
                                         "description": "Автор сообщения",
                                         "type": "string",
                                         "default": "anonymous"
+                                    },
+                                    "status": {
+                                        "description": "Статус сообщения",
+                                        "type": "string",
+                                        "default": "new",
+                                        "enum": [
+                                            "new",
+                                            "processing",
+                                            "in_progress",
+                                            "completed"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -261,6 +272,16 @@
                                     "author": {
                                         "description": "Автор сообщения",
                                         "type": "string"
+                                    },
+                                    "status": {
+                                        "description": "Статус сообщения",
+                                        "type": "string",
+                                        "enum": [
+                                            "new",
+                                            "processing",
+                                            "in_progress",
+                                            "completed"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -409,6 +430,16 @@
                                     "author": {
                                         "description": "Автор сообщения",
                                         "type": "string"
+                                    },
+                                    "status": {
+                                        "description": "Статус сообщения",
+                                        "type": "string",
+                                        "enum": [
+                                            "new",
+                                            "processing",
+                                            "in_progress",
+                                            "completed"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -457,6 +488,11 @@
                     "author": {
                         "type": "string",
                         "example": "anonymous"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": ["new", "processing", "in_progress", "completed"],
+                        "example": "new"
                     },
                     "createdAt": {
                         "type": "string",

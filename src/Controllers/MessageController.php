@@ -94,6 +94,7 @@ final readonly class MessageController
                 properties: [
                     new OA\Property(property: 'content', type: 'string', description: 'Текст сообщения'),
                     new OA\Property(property: 'author', type: 'string', description: 'Автор сообщения', default: 'anonymous'),
+                    new OA\Property(property: 'status', type: 'string', enum: ['new', 'processing', 'in_progress', 'completed'], description: 'Статус сообщения', default: 'new'),
                 ],
                 type: 'object'
             )
@@ -145,6 +146,7 @@ final readonly class MessageController
                 properties: [
                     new OA\Property(property: 'content', type: 'string', description: 'Текст сообщения'),
                     new OA\Property(property: 'author', type: 'string', description: 'Автор сообщения'),
+                    new OA\Property(property: 'status', type: 'string', enum: ['new', 'processing', 'in_progress', 'completed'], description: 'Статус сообщения'),
                 ],
                 type: 'object'
             )
@@ -192,6 +194,7 @@ final readonly class MessageController
                 properties: [
                     new OA\Property(property: 'content', type: 'string', description: 'Текст сообщения'),
                     new OA\Property(property: 'author', type: 'string', description: 'Автор сообщения'),
+                    new OA\Property(property: 'status', type: 'string', enum: ['new', 'processing', 'in_progress', 'completed'], description: 'Статус сообщения'),
                 ],
                 type: 'object'
             )

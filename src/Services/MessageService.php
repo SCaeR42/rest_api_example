@@ -8,6 +8,18 @@ use InvalidArgumentException;
 
 final class MessageService
 {
+    public const STATUS_NEW = 'new';
+    public const STATUS_PROCESSING = 'processing';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_COMPLETED = 'completed';
+
+    private const VALID_STATUSES = [
+        self::STATUS_NEW,
+        self::STATUS_PROCESSING,
+        self::STATUS_IN_PROGRESS,
+        self::STATUS_COMPLETED,
+    ];
+
     /** @var array<int, array<string, mixed>> */
     private array $messages = [];
 
@@ -30,6 +42,7 @@ final class MessageService
                 'id' => (int) $message['id'],
                 'content' => (string) $message['content'],
                 'author' => (string) ($message['author'] ?? 'anonymous'),
+                'status' => self::normalizeStatus($message['status'] ?? self::STATUS_NEW),
                 'createdAt' => (string) $message['createdAt'],
                 'updatedAt' => (string) $message['updatedAt'],
             ],
@@ -70,11 +83,13 @@ final class MessageService
         }
 
         $author = trim((string) ($data['author'] ?? 'anonymous')) ?: 'anonymous';
+        $status = self::normalizeStatus($data['status'] ?? self::STATUS_NEW);
         $now = gmdate(DATE_ATOM);
         $message = [
             'id' => $this->nextId(),
             'content' => $content,
             'author' => $author,
+            'status' => $status,
             'createdAt' => $now,
             'updatedAt' => $now,
         ];
@@ -105,6 +120,7 @@ final class MessageService
 
         $message['content'] = $content;
         $message['author'] = trim((string) ($data['author'] ?? 'anonymous')) ?: 'anonymous';
+        $message['status'] = self::normalizeStatus($data['status'] ?? $message['status']);
         $message['updatedAt'] = gmdate(DATE_ATOM);
 
         $this->updateInStorage($id, $message);
@@ -138,6 +154,10 @@ final class MessageService
         if (array_key_exists('author', $data)) {
             $author = trim((string) $data['author']);
             $message['author'] = $author === '' ? 'anonymous' : $author;
+        }
+
+        if (array_key_exists('status', $data)) {
+            $message['status'] = self::normalizeStatus($data['status']);
         }
 
         $message['updatedAt'] = gmdate(DATE_ATOM);
@@ -193,5 +213,18 @@ final class MessageService
             json_encode(array_values($this->messages), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL,
             LOCK_EX
         );
+    }
+
+    private static function normalizeStatus(mixed $status): string
+    {
+        $status = is_string($status) ? $status : '';
+
+        if (!in_array($status, self::VALID_STATUSES, true)) {
+            throw new InvalidArgumentException(
+                sprintf('Недопустимое значение status: "%s". Допустимые значения: %s.', $status, implode(', ', self::VALID_STATUSES))
+            );
+        }
+
+        return $status;
     }
 }
