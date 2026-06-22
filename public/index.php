@@ -13,6 +13,12 @@ use Slim\Routing\RouteCollectorProxy;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+// Load .env if exists
+$envFile = __DIR__ . '/../.env';
+if (is_file($envFile)) {
+    Dotenv\Dotenv::createImmutable(dirname($envFile))->load();
+}
+
 $app = AppFactory::create();
 
 $app->addBodyParsingMiddleware();

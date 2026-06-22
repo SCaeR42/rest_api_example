@@ -1,0 +1,69 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE: rest-api-messages
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: Exarch-42.3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Generate OpenAPI spec
+        run: composer openapi || true
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/rest_api_example
+
+            # Pull latest changes
+            git fetch origin
+            git reset --hard origin/master
+
+            # Build and start
+            sudo docker compose down || true
+            sudo docker compose build --no-cache
+            sudo docker compose up -d
+
+            # Wait for health check
+            sleep 10
+
+            # Verify deployment
+            curl -sf http://${{secrets.SERVER_HOST}}/health || exit 1
+
+            # Cleanup old images
+            sudo docker image prune -f
+
+      - name: Notify on success
+        if: success()
+        run: echo "Deployment successful!"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "Deployment failed!"

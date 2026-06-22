@@ -2,10 +2,12 @@
   "name": "testscipts/rest-api",
   "description": "Slim REST API messages v1.0",
   "type": "project",
+  "license": "MIT",
   "require": {
     "php": "^8.2",
     "slim/psr7": "^1.7",
-    "slim/slim": "^4.14"
+    "slim/slim": "^4.14",
+    "vlucas/phpdotenv": "^5.6"
   },
   "require-dev": {
     "zircote/swagger-php": "^5.0"
@@ -17,6 +19,6 @@
   },
   "scripts": {
     "start": "php -S 127.0.0.1:8080 -t public public/index.php",
-    "openapi": "vendor/bin/openapi --output public/openapi.json src public"
+    "openapi": "php bin/generate-openapi.php"
   }
 }
