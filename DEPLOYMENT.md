@@ -1391,3 +1391,9 @@ sudo certbot --nginx -d api.your-domain.com
 # 5. Проверка
 curl -sf https://api.your-domain.com/health
 ```
+
+---
+
+## Лицензия
+
+Этот проект распространяется под лицензией MIT. См. файл [LICENSE](LICENSE) для подробностей.
