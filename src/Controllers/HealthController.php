@@ -34,7 +34,7 @@ final class HealthController
         $payload = [
             'status' => 'ok',
             'service' => 'rest-api',
-            'version' => '1.0',
+            'version' => '1.1',
         ];
 
         $response->getBody()->write(json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
