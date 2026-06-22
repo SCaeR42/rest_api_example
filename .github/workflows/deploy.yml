@@ -2,7 +2,7 @@ name: Deploy to Production
 
 on:
   push:
-    branches: [main, master]
+    branches: [master]
   workflow_dispatch:
 
 env:
@@ -12,7 +12,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: production
+    environment: Exarch-42.3
 
     steps:
       - name: Checkout code
@@ -40,11 +40,11 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/rest_api
+            cd /opt/rest_api_example
 
             # Pull latest changes
             git fetch origin
-            git reset --hard origin/main
+            git reset --hard origin/master
 
             # Build and start
             sudo docker compose down || true
@@ -55,7 +55,7 @@ jobs:
             sleep 10
 
             # Verify deployment
-            curl -sf http://localhost:8080/health || exit 1
+            curl -sf http://${{secrets.SERVER_HOST}}/health || exit 1
 
             # Cleanup old images
             sudo docker image prune -f
