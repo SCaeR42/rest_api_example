@@ -394,3 +394,22 @@ API возвращает ошибки в формате:
 - `404` - Ресурс не найден
 - `422` - Ошибка валидации
 - `500` - Внутренняя ошибка сервера
+
+
+
+## Документация по деплою
+
+DEPLOYMENT.md — полное руководство из 10 разделов
+
+### Production-конфигурация PHP
+- docker/php/production-www.conf — PHP-FPM pool (20 max_children, status/ping endpoints)
+- docker/php/production-opcache.ini — OPcache + JIT (256MB, tracing mode)
+- docker/php/production-php.ini — security hardening (expose_php=Off, cookie flags)
+
+### CI/CD
+`.github/workflows/deploy.yml` — GitHub Actions workflow
+
+### Скрипты автоматизации
+- deploy.sh — деплой с бэкапом, health check и rollback
+- backup.sh — резервное копирование данных с ротацией (30 дней)
+- monitoring.sh — мониторинг доступности с автоперезапуском
