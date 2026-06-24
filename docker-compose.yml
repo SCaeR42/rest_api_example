@@ -2,7 +2,7 @@ services:
   # PHP-FPM контейнер
   php:
     build:
-      context: .
+      context: ./docker/php-dev
       dockerfile: Dockerfile
     container_name: rest_api_php
     volumes:
