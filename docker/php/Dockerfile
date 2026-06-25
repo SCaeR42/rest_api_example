@@ -47,6 +47,6 @@ USER appuser
 EXPOSE 9000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:9000/health || exit 1
+    CMD php-fpm -tt || exit 1
 
 CMD ["php-fpm"]

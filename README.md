@@ -35,7 +35,7 @@ composer start
 Для запуска приложения выполните:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Сервер будет доступен по адресу: http://localhost:8080
@@ -45,26 +45,26 @@ docker-compose up -d
 #### Остановка контейнеров
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 #### Пересборка образов
 
 ```bash
-docker-compose build
+docker compose build
 ```
 
 #### Просмотр логов
 
 ```bash
-docker-compose logs -f
+docker compose logs -f
 ```
 
 #### Просмотр логов конкретного контейнера
 
 ```bash
-docker-compose logs -f nginx
-docker-compose logs -f php
+docker compose logs -f nginx
+docker compose logs -f php
 ```
 
 ### Apache
@@ -82,7 +82,7 @@ sudo dnf update -y
 # Установка Docker и Docker Compose
 sudo dnf install -y dnf-utils
 sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker compose-plugin
 
 # Запуск и автозапуск Docker
 sudo systemctl enable --now docker
@@ -195,7 +195,7 @@ sudo docker compose up -d --build
 
 ### 8. Автоматический запуск при перезагрузке сервера
 
-Контейнеры уже настроены с `restart: unless-stopped` в [`docker-compose.yml`](docker-compose.yml), но для гарантии автозапуска после перезагрузки:
+Контейнеры уже настроены с `restart: unless-stopped` в [`docker compose.yml`](docker compose.yml), но для гарантии автозапуска после перезагрузки:
 
 ```bash
 # Создание systemd-сервиса
